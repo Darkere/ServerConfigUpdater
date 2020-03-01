@@ -8,7 +8,7 @@ public class ServerConfig {
     private ForgeConfigSpec.IntValue version;
 
     ServerConfig(){
-        version = builder.comment("This is an internal Value. Do not Modify").defineInRange("version", 0, 0, Integer.MAX_VALUE);
+        version = builder.comment("Version this world is on. This value gets updated automatically!").defineInRange("version", 0, 0, Integer.MAX_VALUE);
         spec = builder.build();
     }
     public int getCurrentVersion(){
