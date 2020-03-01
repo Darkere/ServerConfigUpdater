@@ -58,7 +58,9 @@ public class CommonConfig {
         for(Map.Entry<Integer,String> entry : versionhistory.entrySet()){
             if(entry.getKey() > version){
                 maxversion = entry.getKey();
-                modIDs.addAll(StringUtils.split(entry.getValue(),modIDSeparator));
+                List<String> strings = StringUtils.split(entry.getValue(),modIDSeparator);
+                strings.forEach(s-> s = s.trim());
+                modIDs.addAll(strings);
             }
         }
         ServerConfigUpdater.SERVER_CONFIG.setVersion(maxversion);
