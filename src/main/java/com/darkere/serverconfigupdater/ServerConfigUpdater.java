@@ -70,6 +70,7 @@ public class ServerConfigUpdater
 
     @SubscribeEvent
     public void onServerStarting(FMLServerAboutToStartEvent event) {
+        COMMON_CONFIG.updateVersionHistory();
         Field configsets = null;
         try {
             configsets = ConfigTracker.class.getDeclaredField("configSets");

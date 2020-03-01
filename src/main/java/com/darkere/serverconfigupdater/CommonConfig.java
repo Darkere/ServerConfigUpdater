@@ -28,12 +28,12 @@ public class CommonConfig {
     private void buildConfig() {
 
         builder.push("Add New Version");
-        newVersion = builder.comment("Version Number. VersionNumbers are simple Integers. Use a number larger than the last version").defineInRange("newVersion", 0, 0, Integer.MAX_VALUE);
+        newVersion = builder.comment("Version Number. VersionNumbers are simple Integers. Use a number larger than the last version.").defineInRange("newVersion", 0, 0, Integer.MAX_VALUE);
         toDelete = builder.comment("ModID's of the ServerConfigs that will be deleted when a world with a version lower than this version is loaded the first time. Comma Separated list. (ServerConfig without -server.toml)").define("toDelete", "");
         builder.pop();
 
         builder.push("Version History");
-        history = builder.comment("Editing these values will not affect any worlds that are already on that version").define("history", "");
+        history = builder.comment("Editing these values will not affect any worlds that are already on that version.").define("history", "");
         builder.pop();
         spec = builder.build();
     }
