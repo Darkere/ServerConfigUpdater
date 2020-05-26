@@ -3,7 +3,10 @@ package com.darkere.serverconfigupdater;
 import com.electronwill.nightconfig.core.utils.StringUtils;
 import net.minecraftforge.common.ForgeConfigSpec;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class CommonConfig {
     private ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
@@ -16,7 +19,8 @@ public class CommonConfig {
     private ForgeConfigSpec.IntValue newVersion;
     private ForgeConfigSpec.ConfigValue<String> history;
     private Map<Integer, String> versionhistory = new LinkedHashMap<>();
-
+    private ForgeConfigSpec.ConfigValue<String> filesToDelete;
+    private ForgeConfigSpec.BooleanValue deleteFolders;
     public CommonConfig() {
         buildConfig();
     }
@@ -31,11 +35,26 @@ public class CommonConfig {
         newVersion = builder.comment("Version Number. VersionNumbers are simple Integers. Use a number larger than the last version.").defineInRange("newVersion", 0, 0, Integer.MAX_VALUE);
         toDelete = builder.comment("ModID's of the ServerConfigs that will be deleted when a world with a version lower than this version is loaded the first time. Comma Separated list. (ServerConfig without -server.toml)").define("toDelete", "");
         builder.pop();
-
+        builder.push("File Deleter");
+        filesToDelete = builder.comment("This is intended for deleting datapacks and/or craft tweaker scripts. The file will be deleted every launch if it exists! No access to saves or world folder. Specify the path to the file. Comma Separated List. Example: scripts/badscript.zs").define("filesToDelete","");
+        deleteFolders = builder.comment("By default Folders are only deleted if they are empty. Set to true to change that.").define("deleteFoldersWithContent", false);
+        builder.pop();
         builder.push("Version History");
         history = builder.comment("Editing these values will not affect any worlds that are already on that version.").define("history", "");
         builder.pop();
         spec = builder.build();
+    }
+
+    public boolean shouldDeleteFolders(){
+        return deleteFolders.get();
+    }
+    public List<Path> getFilesToDelete(){
+        String files = filesToDelete.get();
+        if(files.isEmpty()){
+            return new ArrayList<>();
+        }
+        List <String> strings = StringUtils.split(files,modIDSeparator);
+        return strings.stream().map(x-> Paths.get(x)).collect(Collectors.toList());
     }
 
     private void readVersionhistory() {

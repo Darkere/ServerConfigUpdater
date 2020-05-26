@@ -40,7 +40,7 @@ public class ServerConfigUpdater
 {
     // Directly reference a log4j logger.
     public  static final String MODID = "serverconfigupdater";
-    private static final Logger LOGGER = LogManager.getLogger();
+    public  static final Logger LOGGER = LogManager.getLogger();
     public static final CommonConfig COMMON_CONFIG = new CommonConfig();
     public static final ServerConfig SERVER_CONFIG = new ServerConfig();
 
@@ -66,6 +66,8 @@ public class ServerConfigUpdater
     {
         // some preinit code
        COMMON_CONFIG.updateVersionHistory();
+        FileList list = new FileList();
+        list.tryDeletingFiles();
     }
 
     @SubscribeEvent
