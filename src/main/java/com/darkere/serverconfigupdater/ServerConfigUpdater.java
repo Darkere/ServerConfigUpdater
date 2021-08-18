@@ -84,7 +84,7 @@ public class ServerConfigUpdater {
         MinecraftServer server = event.getServer();
 
 
-        final Path serverConfig = server.func_240776_a_(new FolderName("serverconfig"));
+        final Path serverConfig = server.getWorldPath(new FolderName("serverconfig"));
         for (ModConfig modConfig : toReset) {
             String fileName = ConfigTracker.INSTANCE.getConfigFileName(modConfig.getModId(), ModConfig.Type.SERVER);
             File file = new File(fileName);
