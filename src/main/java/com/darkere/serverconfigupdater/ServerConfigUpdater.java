@@ -1,18 +1,17 @@
 package com.darkere.serverconfigupdater;
 
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.storage.FolderName;
+import net.minecraft.world.level.storage.LevelResource;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ExtensionPoint;
+import net.minecraftforge.fml.IExtensionPoint;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ConfigTracker;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.network.FMLNetworkConstants;
+import net.minecraftforge.fmlserverevents.FMLServerAboutToStartEvent;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,21 +38,21 @@ public class ServerConfigUpdater {
 
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
         MinecraftForge.EVENT_BUS.register(this);
-        ModLoadingContext.get().registerExtensionPoint(ExtensionPoint.DISPLAYTEST, () -> Pair.of(() -> FMLNetworkConstants.IGNORESERVERONLY, (a, b) -> true));
+        ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class, ()->new IExtensionPoint.DisplayTest(()->"ANY", (remote, isServer)-> true));
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, COMMON_CONFIG.getSpec());
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, SERVER_CONFIG.getSpec());
     }
 
     private void setup(final FMLCommonSetupEvent event) {
         // some preinit code
-        COMMON_CONFIG.updateVersionHistory();
+        COMMON_CONFIG.readVersionhistory();
         FileList list = new FileList();
         list.tryDeletingFiles();
     }
 
     @SubscribeEvent
     public void onServerStarting(FMLServerAboutToStartEvent event) {
-        COMMON_CONFIG.updateVersionHistory();
+        COMMON_CONFIG.readVersionhistory();
         Field configsets = null;
         try {
             configsets = ConfigTracker.class.getDeclaredField("configSets");
@@ -84,7 +83,7 @@ public class ServerConfigUpdater {
         MinecraftServer server = event.getServer();
 
 
-        final Path serverConfig = server.getWorldPath(new FolderName("serverconfig"));
+        final Path serverConfig = server.getWorldPath(new LevelResource("serverconfig"));
         for (ModConfig modConfig : toReset) {
             String fileName = ConfigTracker.INSTANCE.getConfigFileName(modConfig.getModId(), ModConfig.Type.SERVER);
             File file = new File(fileName);
