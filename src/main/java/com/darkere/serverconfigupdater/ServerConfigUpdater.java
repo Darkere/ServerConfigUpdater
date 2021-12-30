@@ -3,6 +3,7 @@ package com.darkere.serverconfigupdater;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.IExtensionPoint;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -11,8 +12,6 @@ import net.minecraftforge.fml.config.ConfigTracker;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fmlserverevents.FMLServerAboutToStartEvent;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -21,9 +20,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Path;
-import java.util.EnumMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod(ServerConfigUpdater.MODID)
@@ -51,7 +48,7 @@ public class ServerConfigUpdater {
     }
 
     @SubscribeEvent
-    public void onServerStarting(FMLServerAboutToStartEvent event) {
+    public void onServerStarting(ServerAboutToStartEvent event) {
         COMMON_CONFIG.readVersionhistory();
         Field configsets = null;
         try {
@@ -84,11 +81,19 @@ public class ServerConfigUpdater {
 
 
         final Path serverConfig = server.getWorldPath(new LevelResource("serverconfig"));
+        List<ModConfig> notOpen = new ArrayList<>();
+        LogConfigsToReset(toReset);
+
         for (ModConfig modConfig : toReset) {
             String fileName = ConfigTracker.INSTANCE.getConfigFileName(modConfig.getModId(), ModConfig.Type.SERVER);
             File file = new File(fileName);
-            file.delete();
+            if(!file.delete()){
+                notOpen.add(modConfig);
+                LOGGER.warn("Unable to reset config for "+ modConfig.getModId());
+            }
         }
+
+        notOpen.forEach(toReset::remove);
         Method openConfig = null;
         try {
             openConfig = ConfigTracker.class.getDeclaredMethod("openConfig", ModConfig.class, Path.class);
@@ -99,11 +104,21 @@ public class ServerConfigUpdater {
         openConfig.setAccessible(true);
         try {
             for (ModConfig modConfig : toReset) {
-                openConfig.invoke(ConfigTracker.INSTANCE, modConfig, serverConfig);
+                if(!new File(ConfigTracker.INSTANCE.getConfigFileName(modConfig.getModId(), ModConfig.Type.SERVER)).exists())
+                    openConfig.invoke(ConfigTracker.INSTANCE, modConfig, serverConfig);
             }
         } catch (IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
         }
+    }
+
+    private void LogConfigsToReset(Set<ModConfig> toReset) {
+        StringBuilder builder = new StringBuilder();
+        toReset.forEach(x-> builder.append(x.getModId()).append(", "));
+        String s = builder.toString();
+        int comma = s.lastIndexOf(",");
+        s = s.substring(0,comma);
+        LOGGER.info("Resetting configs for: " + s);
     }
 
 }

@@ -29,14 +29,15 @@ public class CommonConfig {
 
     private void buildConfig() {
 
-        builder.push("Versions");
-        history = builder.comment("Define a version here. On world load the mod will look up the serverconfig version and reset all files that specified up to the newest version.")
-            .defineList("versions", List.of("0=modid"), o -> true);
+        builder.push("Version Configuration");
+        history = builder.comment(" Define a version here. On world load the mod will look up the serverconfig version and reset all files that specified up to the newest version." +
+                "\n Example: [\"1=minecraft\",\"2=forge\"] will reset minecraft and forge config on first load, but will only reset forge if the world has been loaded before with only version 1 defined")
+            .defineListAllowEmpty(List.of("versions"),() -> List.of(""), o -> true);
         builder.pop();
         builder.push("File Deleter");
-        filesToDelete = builder.comment("This is intended for deleting files for pack updates. This is a last resort! Replace with empty files instead when possible. The file will be deleted every launch if it exists! Specify the path to the file. Comma Separated List. Example: scripts/badscript.zs")
+        filesToDelete = builder.comment(" This is intended for deleting files for pack updates. This is a last resort! Replace with empty files instead when possible. The file will be deleted every launch if it exists! Specify the path to the file. Comma Separated List. Example: scripts/badscript.zs")
             .defineListAllowEmpty(List.of("files"),()-> List.of(""), o -> true);
-        deleteFolders = builder.comment("By default Folders are only deleted if they are empty. Set to true to change that.")
+        deleteFolders = builder.comment(" By default Folders are only deleted if they are empty. Set to true to change that.")
             .define("deleteFoldersWithContent", false);
         builder.pop();
         spec = builder.build();
