@@ -50,21 +50,7 @@ public class ServerConfigUpdater {
     @SubscribeEvent
     public void onServerStarting(ServerAboutToStartEvent event) {
         COMMON_CONFIG.readVersionhistory();
-        Field configsets = null;
-        try {
-            configsets = ConfigTracker.class.getDeclaredField("configSets");
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-        }
-        if (configsets == null) return;
-        configsets.setAccessible(true);
-        EnumMap<ModConfig.Type, Set<ModConfig>> sets = null;
-        try {
-            sets = (EnumMap<ModConfig.Type, Set<ModConfig>>) configsets.get(ConfigTracker.INSTANCE);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
-        Set<ModConfig> configs = sets.get(ModConfig.Type.SERVER);
+        Set<ModConfig> configs = ConfigTracker.INSTANCE.configSets().get(ModConfig.Type.SERVER);
         Set<ModConfig> toReset = new HashSet<>();
         Set<String> modIDsToReset = COMMON_CONFIG.getModIDsToReset();
         if (modIDsToReset.isEmpty()) return;
@@ -85,7 +71,7 @@ public class ServerConfigUpdater {
         LogConfigsToReset(toReset);
 
         for (ModConfig modConfig : toReset) {
-            String fileName = ConfigTracker.INSTANCE.getConfigFileName(modConfig.getModId(), ModConfig.Type.SERVER);
+            String fileName = modConfig.getFullPath().toString();
             File file = new File(fileName);
             if(!file.delete()){
                 notOpen.add(modConfig);
@@ -104,7 +90,7 @@ public class ServerConfigUpdater {
         openConfig.setAccessible(true);
         try {
             for (ModConfig modConfig : toReset) {
-                if(!new File(ConfigTracker.INSTANCE.getConfigFileName(modConfig.getModId(), ModConfig.Type.SERVER)).exists())
+                if(!modConfig.getFullPath().toFile().exists())
                     openConfig.invoke(ConfigTracker.INSTANCE, modConfig, serverConfig);
             }
         } catch (IllegalAccessException | InvocationTargetException e) {
