@@ -86,7 +86,7 @@ public class ServerConfigUpdater {
 
         final Path serverConfig = server.getWorldPath(new FolderName("serverconfig"));
         for (ModConfig modConfig : toReset) {
-            String fileName = ConfigTracker.INSTANCE.getConfigFileName(modConfig.getModId(), ModConfig.Type.SERVER);
+            String fileName = modConfig.getFullPath().toString();
             File file = new File(fileName);
             file.delete();
         }
@@ -100,7 +100,8 @@ public class ServerConfigUpdater {
         openConfig.setAccessible(true);
         try {
             for (ModConfig modConfig : toReset) {
-                openConfig.invoke(ConfigTracker.INSTANCE, modConfig, serverConfig);
+                if(!modConfig.getFullPath().toFile().exists())
+                    openConfig.invoke(ConfigTracker.INSTANCE, modConfig, serverConfig);
             }
         } catch (IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
