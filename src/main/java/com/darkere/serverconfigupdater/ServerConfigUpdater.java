@@ -57,7 +57,6 @@ public class ServerConfigUpdater {
         configs.forEach(x -> {
             if (modIDsToReset.contains(x.getModId())) {
                 toReset.add(x);
-                modIDsToReset.remove(x.getModId());
             }
         });
 
