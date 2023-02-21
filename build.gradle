@@ -18,7 +18,7 @@ apply plugin: 'maven-publish'
 apply from: 'https://raw.githubusercontent.com/SizableShrimp/Forge-Class-Remapper/main/classremapper.gradle'
 
 
-version = '2.1'
+version = '2.2'
 group = 'com.darkere.serverconfigupdater' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'serverconfigupdater'
 
