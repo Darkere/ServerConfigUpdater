@@ -75,7 +75,6 @@ public class ServerConfigUpdater {
         configs.forEach(x -> {
             if (modIDsToReset.contains(x.getModId())) {
                 toReset.add(x);
-                modIDsToReset.remove(x.getModId());
             }
         });
 
@@ -87,6 +86,7 @@ public class ServerConfigUpdater {
         final Path serverConfig = server.getWorldPath(new FolderName("serverconfig"));
         for (ModConfig modConfig : toReset) {
             String fileName = modConfig.getFullPath().toString();
+            LOGGER.info("Resetting " + fileName);
             File file = new File(fileName);
             file.delete();
         }
