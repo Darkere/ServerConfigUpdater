@@ -1,15 +1,22 @@
 plugins {
     id 'eclipse'
+    id 'idea'
     id 'maven-publish'
-    id 'net.minecraftforge.gradle' version '5.+'
+    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+    id 'net.darkhax.curseforgegradle' version '1.1.15'
 }
 
 
-version = '3.2'
-group = 'com.darkere.serverconfigupdater' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = 'serverconfigupdater'
+version = mod_version
+group = mod_group_id
+
+base {
+    archivesName = mod_id
+}
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
 
 minecraft {
     // The mappings can be changed at any time, and must be in the following format.
@@ -17,9 +24,10 @@ minecraft {
     // stable_#            Stables are built at the discretion of the MCP team.
     // Use non-default mappings at your own risk. they may not always work.
     // Simply re-run your setup task after changing the mappings to update your workspace.
-    mappings channel: 'official', version: '1.19'
+    mappings channel: mapping_channel, version: mapping_version
     // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
-    
+    copyIdeResources = true
+
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
     // Default run configurations.
@@ -81,7 +89,7 @@ dependencies {
     // Specify the version of Minecraft to use, If this is any group other then 'net.minecraft' it is assumed
     // that the dep is a ForgeGradle 'patcher' dependency. And it's patches will be applied.
     // The userdev artifact is a special name and will get all sorts of transformations applied to it.
-    minecraft 'net.minecraftforge:forge:1.19-41.0.38'
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 
 
     // You may put jars on which you depend on in ./libs or you may define them like so..
@@ -136,4 +144,11 @@ publishing {
             url "file:///${project.projectDir}/mcmodsrepo"
         }
     }
+}
+task publishCurseForge(type: net.darkhax.curseforgegradle.TaskPublishCurseForge) {
+
+
+    apiToken = System.getenv('curseforge_token')
+    def mainFile = upload(365281, jar)
+    mainFile.changelog = '- updated to 1.20'
 }
